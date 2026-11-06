@@ -14,6 +14,21 @@ async function getModulesFromAPI() {
     return getRequest("/module/get","GET-MODULES")
 }
 
+export async function deleteModule(idModule){
+    let response = null;
+    try {
+        response = await deleteModuleFromAPI(idModule);
+    } catch (err){
+        response = {error:1, status:404,data:'erreur réseau, impossible de supprimer le module'}
+    }
+    return response;
+}
+
+async function deleteModuleFromAPI(idModule) {
+    return deleteRequest("/module/delete/"+idModule,"DELETE-MODULE")
+}
+
 export default {
-    getModules
+    getModules,
+    deleteModule
 }

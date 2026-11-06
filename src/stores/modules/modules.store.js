@@ -10,10 +10,25 @@ export const useModulesStore = defineStore('modules', () => {
         modules.value = newModules
     }
 
+    const removeModule = (idModule) => {
+        modules.value = modules.value.filter(module => String(module._id) !== String(idModule));
+    }
+
+
+
     const getModules = async () => {
         try {
             const response = await modulesService.getModules();
             updateModules(response.data)
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    const deleteModule = async (idModule) => {
+        try {
+            const response = await modulesService.deleteModule(idModule);
+            removeModule(response.data._id)
         } catch (e) {
             console.error(e)
         }
@@ -26,6 +41,7 @@ export const useModulesStore = defineStore('modules', () => {
     return {
         getModules,
         getOnlineModules,
-        modules
+        modules,
+        deleteModule
     }
 })
