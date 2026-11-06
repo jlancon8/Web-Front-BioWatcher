@@ -6,14 +6,14 @@ export const useChipsetsStore = defineStore('chipsets', () => {
     // state
     const chipsets = ref([])
 
-    const updateChipsets = (newChipsets) => {
+    const setChipsetsState = (newChipsets) => {
         chipsets.value = newChipsets
     }
 
     const getChipsets = async () => {
         try {
             const response = await chipsetsServices.getChipsets();
-            updateChipsets(response.data)
+            setChipsetsState(response.data)
         } catch (e) {
             console.error(e)
         }

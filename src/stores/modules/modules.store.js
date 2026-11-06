@@ -6,20 +6,25 @@ export const useModulesStore = defineStore('modules', () => {
     // state
     const modules = ref([])
 
-    const updateModules = (newModules) => {
+    const setModulesState = (newModules) => {
         modules.value = newModules
     }
 
-    const removeModule = (idModule) => {
+    const deleteModuleState = (idModule) => {
         modules.value = modules.value.filter(module => String(module._id) !== String(idModule));
     }
 
-
+    const editModuleState = (updatedModule) => {
+        const index = modules.value.findIndex(module => String(module._id) === String(updatedModule._id));
+        if (index !== -1) {
+            modules.value[index] = updatedModule;
+        }
+    }
 
     const getModules = async () => {
         try {
             const response = await modulesService.getModules();
-            updateModules(response.data)
+            setModulesState(response.data)
         } catch (e) {
             console.error(e)
         }
@@ -28,7 +33,16 @@ export const useModulesStore = defineStore('modules', () => {
     const deleteModule = async (idModule) => {
         try {
             const response = await modulesService.deleteModule(idModule);
-            removeModule(response.data._id)
+            deleteModuleState(response.data._id)
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    const editModule = async (idModule, data) => {
+        try {
+            const response = await modulesService.editModule(idModule, data);
+            editModuleState(response.data)
         } catch (e) {
             console.error(e)
         }
@@ -42,6 +56,7 @@ export const useModulesStore = defineStore('modules', () => {
         getModules,
         getOnlineModules,
         modules,
-        deleteModule
+        deleteModule,
+        editModule
     }
 })

@@ -1,4 +1,4 @@
-import {deleteRequest, getRequest, postRequest, putRequest} from "@/services/axios.service.js";
+import {deleteRequest, getRequest, patchRequest, postRequest, putRequest} from "@/services/axios.service.js";
 
 export async function getModules(){
     let response = null;
@@ -28,7 +28,22 @@ async function deleteModuleFromAPI(idModule) {
     return deleteRequest("/module/delete/"+idModule,"DELETE-MODULE")
 }
 
+export async function editModule(idModule, data){
+    let response = null;
+    try {
+        response = await editModuleFromAPI(idModule, data);
+    } catch (err){
+        response = {error:1, status:404,data:'erreur réseau, impossible de modifier le module'}
+    }
+    return response;
+}
+
+async function editModuleFromAPI(idModule, data) {
+    return patchRequest("/module/update", {idModule, data}, "EDIT-MODULE")
+}
+
 export default {
     getModules,
-    deleteModule
+    deleteModule,
+    editModule
 }

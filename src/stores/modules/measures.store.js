@@ -7,18 +7,18 @@ export const useMeasuresStore = defineStore('measures', () => {
     const measures = ref([])
     const latestMeasures = ref([])
 
-    const updateMeasures = (newMeasures) => {
+    const setMeasuresState = (newMeasures) => {
         measures.value = newMeasures
     }
 
-    const updateLatestMeasures = (newMeasures) => {
+    const setLatestMeasuresState = (newMeasures) => {
         latestMeasures.value = newMeasures
     }
 
     const getMeasures = async () => {
         try {
             const response = await measuresService.getMeasures();
-            updateMeasures(response.data)
+            setMeasuresState(response.data)
         } catch (e) {
             console.error(e)
         }
@@ -31,7 +31,7 @@ export const useMeasuresStore = defineStore('measures', () => {
     const getLatestMeasures = async () => {
         try {
             const response = await measuresService.getLatestMeasures();
-            updateLatestMeasures(response.data)
+            setLatestMeasuresState(response.data)
         } catch (e) {
             console.error(e)
         }
