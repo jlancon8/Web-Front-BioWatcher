@@ -11,7 +11,7 @@ export async function getMeasures(){
 }
 
 async function getMeasuresFromAPI() {
-    return getRequest("/measure/get","GET-MEASURES")
+    return getRequest("/measures","GET-MEASURES")
 }
 
 export async function getLatestMeasures(){
@@ -25,10 +25,40 @@ export async function getLatestMeasures(){
 }
 
 async function getLatestMeasuresFromAPI() {
-    return getRequest("/measure/getlatest","GET-LATEST-MEASURES")
+    return getRequest("/measures/latest","GET-LATEST-MEASURES")
+}
+
+export async function getMeasuresStats(moduleId, type, from, to){
+    let response = null;
+    try {
+        response = await getMeasuresStatsFromAPI(moduleId, type, from, to);
+    } catch (err){
+        response = {error:1, status:404,data:'erreur réseau, impossible de récupérer les statistiques'}
+    }
+    return response;
+}
+
+async function getMeasuresStatsFromAPI(moduleId, type, from, to) {
+    return getRequest(`/measures/stats?module=${moduleId}&type=${type}&from=${from}&to=${to}`, "GET-MEASURES-STATS")
+}
+
+export async function getMeasuresChartData(moduleId, type, from, to){
+    let response = null;
+    try {
+        response = await getMeasuresChartDataFromAPI(moduleId, type, from, to);
+    } catch (err){
+        response = {error:1, status:404,data:'erreur réseau, impossible de récupérer les données du graphique'}
+    }
+    return response;
+}
+
+async function getMeasuresChartDataFromAPI(moduleId, type, from, to) {
+    return getRequest(`/measures/chartdata?module=${moduleId}&type=${type}&from=${from}&to=${to}`, "GET-MEASURES-CHART-DATA")
 }
 
 export default {
     getMeasures,
-    getLatestMeasures
+    getLatestMeasures,
+    getMeasuresStats,
+    getMeasuresChartData
 }

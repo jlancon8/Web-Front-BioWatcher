@@ -11,7 +11,7 @@ export async function getChipsets(){
 }
 
 async function getChipsetsFromAPI() {
-    return getRequest("/chipset/get","GET-CHIPSETS")
+    return getRequest("/chipsets","GET-CHIPSETS")
 }
 
 export default {

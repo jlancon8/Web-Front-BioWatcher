@@ -11,7 +11,7 @@ export async function getModules(){
 }
 
 async function getModulesFromAPI() {
-    return getRequest("/module/get","GET-MODULES")
+    return getRequest("/modules","GET-MODULES")
 }
 
 export async function deleteModule(idModule){
@@ -25,7 +25,7 @@ export async function deleteModule(idModule){
 }
 
 async function deleteModuleFromAPI(idModule) {
-    return deleteRequest("/module/delete/"+idModule,"DELETE-MODULE")
+    return deleteRequest("/modules/"+idModule,"DELETE-MODULE")
 }
 
 export async function editModule(idModule, data){
@@ -39,7 +39,7 @@ export async function editModule(idModule, data){
 }
 
 async function editModuleFromAPI(idModule, data) {
-    return patchRequest("/module/update", {idModule, data}, "EDIT-MODULE")
+    return patchRequest("/modules", {idModule, data}, "EDIT-MODULE")
 }
 
 export default {

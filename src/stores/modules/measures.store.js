@@ -6,6 +6,8 @@ export const useMeasuresStore = defineStore('measures', () => {
     // state
     const measures = ref([])
     const latestMeasures = ref([])
+    const measuresStats = ref([])
+    const measuresChartData = ref([])
 
     const setMeasuresState = (newMeasures) => {
         measures.value = newMeasures
@@ -13,6 +15,14 @@ export const useMeasuresStore = defineStore('measures', () => {
 
     const setLatestMeasuresState = (newMeasures) => {
         latestMeasures.value = newMeasures
+    }
+
+    const setMeasuresStats = (newStats) => {
+        measuresStats.value = newStats
+    }
+
+    const setMeasuresChartData = (newChartData) => {
+        measuresChartData.value = newChartData
     }
 
     const getMeasures = async () => {
@@ -31,9 +41,31 @@ export const useMeasuresStore = defineStore('measures', () => {
     const getLatestMeasures = async () => {
         try {
             const response = await measuresService.getLatestMeasures();
+            console.log("Latest measures response:", JSON.stringify(response.data));
             setLatestMeasuresState(response.data)
         } catch (e) {
             console.error(e)
+        }
+    }
+
+    const getMeasuresStats = async (moduleId, type, from, to) => {
+        try {
+            const response = await measuresService.getMeasuresStats(moduleId, type, from, to);
+            setMeasuresStats(response.data)
+        } catch (e) {
+            console.error(e)
+            return null
+        }
+    }
+
+    const getMeasuresChartData = async (moduleId, type, from, to) => {
+        try {
+            const response = await measuresService.getMeasuresChartData(moduleId, type, from, to)
+            console.log("response:", JSON.stringify(response.data));
+            setMeasuresChartData(response.data)
+        } catch (e) {
+            console.error(e)
+            measuresChartData.value = []
         }
     }
 
@@ -41,7 +73,11 @@ export const useMeasuresStore = defineStore('measures', () => {
         getMeasures,
         getLatestMeasures,
         getMeasureById,
-        measures,
-        latestMeasures
+        getMeasuresStats,
+        measuresStats,
+        latestMeasures,
+        measuresChartData,
+        getMeasuresChartData,
+        measures
     }
 })
