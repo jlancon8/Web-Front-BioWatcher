@@ -22,7 +22,10 @@ const formatType = (value, type) => {
     return `${Number(value).toFixed(2)} ${units[type] ?? ''}`
 }
 
+const DAY = 24 * 60 * 60 * 1000
+
 export {
     formatDate,
-    formatType
+    formatType,
+    DAY
 }

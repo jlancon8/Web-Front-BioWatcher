@@ -146,7 +146,7 @@ import {computed, onMounted, ref, watch} from 'vue'
 import LineChart from '@/components/charts/LineChart.vue'
 import {useModulesStore} from '@/stores/modules/modules.store.js'
 import {useMeasuresStore} from '@/stores/modules/measures.store.js'
-import {formatDate, formatType} from "@/utils/formatter.js";
+import {DAY, formatDate, formatType} from "@/utils/formatter.js";
 
 const modulesStore = useModulesStore()
 const measuresStore = useMeasuresStore()
@@ -186,7 +186,6 @@ const paginatedMeasures = computed(() =>
 
 
 
-const DAY = 24 * 60 * 60 * 1000
 const types = ['temperature', 'humidity', 'pm25']
 const units = {temperature: '°C', humidity: '%', pm25: 'µg/m³'}
 
