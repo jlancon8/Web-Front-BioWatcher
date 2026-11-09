@@ -132,10 +132,10 @@
 
           <div class="flex gap-2">
             <button
-                v-if="confirmingEdit"
+                v-if="confirmingUpdate"
                 type="button"
                 class="min-h-11 flex-1 cursor-pointer rounded-[10px] border border-[#c7d2c9] bg-white px-4 text-sm hover:bg-[#f5f8f5]"
-                @click="confirmingEdit = false"
+                @click="confirmingUpdate = false"
             >
               Annuler
             </button>
@@ -144,9 +144,9 @@
                 type="button"
                 :disabled="!isDirty || !isValid"
                 class="min-h-11 flex-1 cursor-pointer rounded-[10px] bg-[#14352a] px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
-                @click="confirmingEdit ? saveModule() : (confirmingEdit = true)"
+                @click="confirmingUpdate ? saveModule() : (confirmingUpdate = true)"
             >
-              {{ confirmingEdit ? 'Confirmer la modification' : 'Enregistrer' }}
+              {{ confirmingUpdate ? 'Confirmer la modification' : 'Enregistrer' }}
             </button>
           </div>
         </form>
@@ -198,7 +198,7 @@ const search = ref('')
 const statusFilter = ref('')
 const form = ref({name: '', shortName: '', sendInterval: 60})
 const confirmingDelete = ref(false)
-const confirmingEdit = ref(false)
+const confirmingUpdate = ref(false)
 const copied = ref(false)
 
 const inputClass =
@@ -251,13 +251,13 @@ const resetForm = () => {
 }
 
 const saveModule = async () => {
-  await modulesStore.editModule(selectedModule.value._id, {
+  await modulesStore.updateModule(selectedModule.value._id, {
     name: form.value.name.trim(),
     shortName: form.value.shortName.trim(),
     sendInterval: form.value.sendInterval
   })
 
-  confirmingEdit.value = false
+  confirmingUpdate.value = false
 }
 
 const deleteModule = async () => {

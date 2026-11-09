@@ -14,7 +14,7 @@ export const useModulesStore = defineStore('modules', () => {
         modules.value = modules.value.filter(module => String(module._id) !== String(idModule));
     }
 
-    const editModuleState = (updatedModule) => {
+    const updateModuleState = (updatedModule) => {
         const index = modules.value.findIndex(module => String(module._id) === String(updatedModule._id));
         if (index !== -1) {
             modules.value[index] = updatedModule;
@@ -39,10 +39,10 @@ export const useModulesStore = defineStore('modules', () => {
         }
     }
 
-    const editModule = async (idModule, data) => {
+    const updateModule = async (idModule, data) => {
         try {
-            const response = await modulesService.editModule(idModule, data);
-            editModuleState(response.data)
+            const response = await modulesService.updateModule(idModule, data);
+            updateModuleState(response.data)
         } catch (e) {
             console.error(e)
         }
@@ -57,6 +57,6 @@ export const useModulesStore = defineStore('modules', () => {
         getOnlineModules,
         modules,
         deleteModule,
-        editModule
+        updateModule
     }
 })

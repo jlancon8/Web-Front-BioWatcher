@@ -41,7 +41,6 @@ export const useMeasuresStore = defineStore('measures', () => {
     const getLatestMeasures = async () => {
         try {
             const response = await measuresService.getLatestMeasures();
-            console.log("Latest measures response:", JSON.stringify(response.data));
             setLatestMeasuresState(response.data)
         } catch (e) {
             console.error(e)

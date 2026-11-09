@@ -28,22 +28,22 @@ async function deleteModuleFromAPI(idModule) {
     return deleteRequest("/modules/"+idModule,"DELETE-MODULE")
 }
 
-export async function editModule(idModule, data){
+export async function updateModule(idModule, data){
     let response = null;
     try {
-        response = await editModuleFromAPI(idModule, data);
+        response = await updateModuleFromAPI(idModule, data);
     } catch (err){
         response = {error:1, status:404,data:'erreur réseau, impossible de modifier le module'}
     }
     return response;
 }
 
-async function editModuleFromAPI(idModule, data) {
-    return patchRequest("/modules", {idModule, data}, "EDIT-MODULE")
+async function updateModuleFromAPI(idModule, data) {
+    return patchRequest("/modules", {idModule, data}, "UPDATE-MODULE")
 }
 
 export default {
     getModules,
     deleteModule,
-    editModule
+    updateModule
 }

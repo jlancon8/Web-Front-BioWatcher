@@ -1,3 +1,11 @@
+const ROLES = [
+    { label: 'Administrateur', value: 'admin' },
+    { label: 'Gestionnaire', value: 'gestionnaire' },
+    { label: 'Garde forestier', value: 'garde' },
+    { label: 'Services de secours', value: 'sdis' },
+    { label: 'Utilisateur', value: 'basic' }
+]
+
 const formatDate = (date) => {
     return new Date(date).toLocaleString('fr-FR', {
         day: '2-digit',
@@ -22,10 +30,23 @@ const formatType = (value, type) => {
     return `${Number(value).toFixed(2)} ${units[type] ?? ''}`
 }
 
+const formatRole = (roles) => {
+    if (!roles || roles.length === 0) {
+        return 'Aucun rôle'
+    }
+
+    return roles.map(role => {
+        const found = ROLES.find(r => r.value === role)
+        return found ? found.label : role
+    }).join(', ')
+}
+
 const DAY = 24 * 60 * 60 * 1000
 
 export {
     formatDate,
     formatType,
-    DAY
+    formatRole,
+    DAY,
+    ROLES
 }
