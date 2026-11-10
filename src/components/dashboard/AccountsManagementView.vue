@@ -50,19 +50,19 @@
             </td>
 
             <td class="px-2 py-3.5">
-                <span :class="roleClass(account.rights)">
-                  {{ formatRole(account.rights) }}
-                </span>
+              <span :class="`account-badge account-badge--${account.rights?.[0] ?? 'basic'}`">
+                {{ formatRole(account.rights) }}
+              </span>
             </td>
 
             <td class="px-2 py-3.5">
-              {{  }}
+              {{ account.lastLogin ? formatDate(account.lastLogin) : 'Jamais' }}
             </td>
 
             <td class="px-2 py-3.5">
-                <span :class="statusClass(account.active)">
-                  {{ account.active ? 'Actif' : 'Désactivé' }}
-                </span>
+              <span :class="`account-badge account-badge--${account.active ? 'active' : 'inactive'}`">
+                {{ account.active ? 'Actif' : 'Désactivé' }}
+              </span>
             </td>
           </tr>
           </tbody>
@@ -95,9 +95,7 @@
                   v-model="form.login"
                   type="text"
                   autocomplete="off"
-                  class="disabled:cursor-not-allowed"
-                  :class="[inputClass, isAdmin ? 'opacity-50' : 'opacity-100']"
-                  :disabled="isAdmin"
+                  class="account-input"
               />
             </div>
 
@@ -114,9 +112,7 @@
                   v-model="form.email"
                   type="email"
                   autocomplete="off"
-                  class="disabled:cursor-not-allowed"
-                  :class="[inputClass, isAdmin ? 'opacity-50' : 'opacity-100']"
-                  :disabled="isAdmin"
+                  class="account-input"
               />
             </div>
 
@@ -131,9 +127,7 @@
               <select
                   id="account-role"
                   v-model="form.role"
-                  class="disabled:cursor-not-allowed"
-                  :class="[inputClass, isAdmin ? 'opacity-50' : 'opacity-100']"
-                  :disabled="isAdmin"
+                  class="account-input"
               >
                 <option
                     v-for="role in ROLES"
@@ -161,7 +155,7 @@
                   v-model="form.password"
                   type="password"
                   autocomplete="new-password"
-                  :class="inputClass"
+                  class="account-input"
               />
 
               <p class="text-xs text-[#55655b]">
@@ -196,10 +190,8 @@
               <button
                   v-if="!creating"
                   type="button"
-                  class="disabled:cursor-not-allowed min-h-11 rounded-lg border border-[#e5b0a6] bg-white px-3.5 text-[13px] font-bold text-[#8a1f10] hover:bg-[#fdf1ee] w-full"
-                  @click="deleteAccount"
-                  :class="[isAdmin ? 'opacity-50' : 'opacity-100 cursor-pointer']"
-                  :disabled="isAdmin"
+                  class="min-h-11 w-full cursor-pointer rounded-lg border border-[#e5b0a6] bg-white px-3.5 text-[13px] font-bold text-[#8a1f10] hover:bg-[#fdf1ee]"
+                  @click="showDeleteDialog = true"
               >
                 Supprimer le compte
               </button>
@@ -208,11 +200,22 @@
         </aside>
       </div>
     </div>
+
+    <ConfirmDeleteDialog
+        v-model="showDeleteDialog"
+        title="Supprimer le compte"
+        :confirm-text="selectedAccount?.login ?? ''"
+        :loading="deleting"
+        @confirm="deleteAccount"
+    >
+      Cette action est irréversible. Le compte sera définitivement supprimé.
+    </ConfirmDeleteDialog>
   </main>
 </template>
 
 <script setup>
 import {computed, onMounted, ref} from 'vue'
+import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog.vue'
 import {useUsersStore} from '@/stores/modules/users.store.js'
 import {formatDate, formatRole, ROLES} from '@/utils/formatter.js'
 
@@ -229,26 +232,12 @@ const emptyForm = () => ({
   password: ''
 })
 
-const isAdmin = computed(() => {
-  const account = selectedAccount.value
-  if (!account) return false
-
-  const role = Array.isArray(account.rights)
-      ? account.rights[0]
-      : account.rights
-
-  return role === 'admin'
-})
-
 const selectedId = ref(null)
 const creating = ref(false)
 const saving = ref(false)
+const deleting = ref(false)
+const showDeleteDialog = ref(false)
 const form = ref(emptyForm())
-const confirmingDisable = ref(false)
-const passwordSent = ref(false)
-
-const inputClass =
-    'min-h-11 rounded-lg border border-[#c7d2c9] bg-white px-3 text-sm outline-none focus:border-[#285d49]'
 
 const selectedAccount = computed(() =>
     userStore.users.find(account => account._id === selectedId.value) ?? null
@@ -277,11 +266,10 @@ const deleteAccount = async () => {
 
   if (!account) return
 
-  if (!confirm(`Voulez-vous vraiment supprimer le compte ${account.login} ?`)) {
-    return
-  }
-
+  deleting.value = true
   await userStore.deleteUser(account._id)
+  deleting.value = false
+  showDeleteDialog.value = false
 
   selectedId.value = null
   creating.value = false
@@ -309,28 +297,6 @@ const isValid = computed(() => {
   )
 })
 
-const roleClass = (rights) => {
-  const role = Array.isArray(rights) ? rights[0] : rights
-
-  return [
-    'rounded-full px-2.5 py-1 text-xs font-bold',
-    {
-      admin: 'bg-[#14352a] text-white',
-      gestionnaire: 'bg-[#d9e4f5] text-[#1d3f73]',
-      garde: 'bg-[#e3f1e7] text-[#1e5a36]',
-      sdis: 'bg-[#fff0f0] text-[#ff0000]',
-      basic: 'bg-[#f5f8f5] text-[#4a554d]'
-    }[role] ?? 'bg-[#f5f8f5] text-[#4a554d]'
-  ]
-}
-
-const statusClass = (active) => [
-  'rounded-full px-2.5 py-1 text-xs font-bold',
-  active
-      ? 'bg-[#d7ebdd] text-[#1e5a36]'
-      : 'bg-[#e6e8e4] text-[#4a554d]'
-]
-
 const resetForm = () => {
   const account = selectedAccount.value
 
@@ -343,8 +309,6 @@ const resetForm = () => {
       }
       : emptyForm()
 
-  confirmingDisable.value = false
-  passwordSent.value = false
   saving.value = false
 }
 

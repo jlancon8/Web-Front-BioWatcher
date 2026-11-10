@@ -71,7 +71,7 @@
     </nav>
 
     <div class="px-8 pb-10">
-      <p class="text-sm font-medium text-[#c4d3cd]">Connecté : {{ role }}</p>
+      <p class="text-sm text-center font-medium text-[#c4d3cd]">Connecté : {{ formatRole(role) }}</p>
     </div>
   </aside>
 </template>
@@ -79,11 +79,15 @@
 <script setup>
 import {computed, ref, watch} from 'vue'
 import {useRoute} from 'vue-router'
+import {formatRole} from "@/utils/formatter.js";
+import {useAuthStore} from "@/stores/modules/auth.store.js";
+
+const authStore = useAuthStore()
 
 defineProps({
   role: {
-    type: String,
-    default: 'gestionnaire'
+    type: Array,
+    default: ''
   }
 })
 
@@ -94,8 +98,10 @@ const menuItems = [
   {label: 'Modules et mesures', to: '/dashboard'},
   {label: 'Historique', to: '/dashboard/history'},
   {label: 'Gestion des modules', to: '/dashboard/modules'},
-  {label: 'Comptes', to: '/dashboard/accounts'}
-]
+  ...(authStore.currentUser?.rights?.includes('admin')
+      ? [{label: 'Comptes', to: '/dashboard/accounts'}]
+      : [])
+];
 
 const primaryItems = computed(() => menuItems.slice(0, 2))
 const secondaryItems = computed(() => menuItems.slice(2))

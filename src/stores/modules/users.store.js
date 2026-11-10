@@ -19,7 +19,6 @@ export const useUsersStore = defineStore('users', () => {
 
     const createUserState = (newUser) => {
         users.value.push(newUser);
-        console.log("current users:", JSON.stringify(users.value))
     }
 
     const deleteUserState = (idUser) => {

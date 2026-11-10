@@ -56,7 +56,7 @@
             </td>
             <td class="px-2 py-3.5">{{ module.sendInterval }} s</td>
             <td class="px-2 py-3.5">
-              <span :class="statusClass(module.status)">{{ statusLabel(module.status) }}</span>
+              <span :class="`module-badge module-badge--${module.status}`">{{ statusLabel(module.status) }}</span>
             </td>
           </tr>
 
@@ -73,18 +73,18 @@
       >
         <div class="flex items-center justify-between gap-2">
           <h2 class="truncate text-[17px] font-extrabold text-[#1b2a22]">{{ selectedModule.name }}</h2>
-          <span :class="statusClass(selectedModule.status)">{{ statusLabel(selectedModule.status) }}</span>
+          <span :class="`module-badge module-badge--${selectedModule.status}`">{{ statusLabel(selectedModule.status) }}</span>
         </div>
 
         <form class="flex flex-col gap-4" @submit.prevent="saveModule">
           <div class="flex flex-col gap-1.5">
             <label for="module-name" class="text-[13px] text-[#55655b]">Nom</label>
-            <input id="module-name" v-model="form.name" type="text" :class="inputClass"/>
+            <input id="module-name" v-model="form.name" type="text" class="module-input"/>
           </div>
 
           <div class="flex flex-col gap-1.5">
             <label for="module-short-name" class="text-[13px] text-[#55655b]">Nom court</label>
-            <input id="module-short-name" v-model="form.shortName" type="text" :class="inputClass"/>
+            <input id="module-short-name" v-model="form.shortName" type="text" class="module-input"/>
           </div>
 
           <div class="flex flex-col gap-1.5">
@@ -97,7 +97,7 @@
                 type="number"
                 min="1"
                 step="1"
-                :class="[inputClass, 'w-32']"
+                class="module-input module-input--short"
             />
           </div>
 
@@ -152,26 +152,14 @@
         </form>
 
         <div class="flex items-center justify-between gap-3 border-t border-[#e3e9e4] pt-4">
-          <p class="text-[13px] text-[#55655b]">
-            {{ confirmingDelete ? 'Ce module et ses mesures seront supprimés' : 'Supprimer ce module et ses mesures' }}
-          </p>
-          <div class="flex shrink-0 gap-2">
-            <button
-                v-if="confirmingDelete"
-                type="button"
-                class="min-h-11 cursor-pointer rounded-lg border border-[#c7d2c9] bg-white px-3.5 text-[13px] hover:bg-[#f5f8f5]"
-                @click="confirmingDelete = false"
-            >
-              Non
-            </button>
-            <button
-                type="button"
-                class="min-h-11 cursor-pointer rounded-lg border border-[#e5b0a6] bg-white px-3.5 text-[13px] font-bold text-[#8a1f10] hover:bg-[#fdf1ee]"
-                @click="confirmingDelete ? deleteModule() : (confirmingDelete = true)"
-            >
-              {{ confirmingDelete ? 'Confirmer' : 'Supprimer' }}
-            </button>
-          </div>
+          <p class="text-[13px] text-[#55655b]">Supprimer ce module et ses mesures</p>
+          <button
+              type="button"
+              class="min-h-11 shrink-0 cursor-pointer rounded-lg border border-[#e5b0a6] bg-white px-3.5 text-[13px] font-bold text-[#8a1f10] hover:bg-[#fdf1ee]"
+              @click="showDeleteDialog = true"
+          >
+            Supprimer
+          </button>
         </div>
       </aside>
 
@@ -182,11 +170,22 @@
         Sélectionnez un module dans la liste pour modifier ses réglages
       </aside>
     </div>
+
+    <ConfirmDeleteDialog
+        v-model="showDeleteDialog"
+        title="Supprimer le module"
+        :confirm-text="selectedModule?.name ?? ''"
+        :loading="deleting"
+        @confirm="deleteModule"
+    >
+      Cette action est irréversible. Le module et toutes ses mesures seront définitivement supprimés.
+    </ConfirmDeleteDialog>
   </main>
 </template>
 
 <script setup>
 import {computed, onMounted, ref, watch} from 'vue'
+import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog.vue'
 import {useModulesStore} from '@/stores/modules/modules.store.js'
 import {useChipsetsStore} from '@/stores/modules/chipsets.store.js'
 
@@ -197,12 +196,10 @@ const selectedId = ref(null)
 const search = ref('')
 const statusFilter = ref('')
 const form = ref({name: '', shortName: '', sendInterval: 60})
-const confirmingDelete = ref(false)
+const showDeleteDialog = ref(false)
+const deleting = ref(false)
 const confirmingUpdate = ref(false)
 const copied = ref(false)
-
-const inputClass =
-    'min-h-11 rounded-lg border border-[#c7d2c9] px-3 text-sm outline-none focus:border-[#285d49]'
 
 const selectedModule = computed(() =>
     modulesStore.modules.find(module => module._id === selectedId.value) ?? null
@@ -235,11 +232,6 @@ const isValid = computed(() =>
 
 const statusLabel = (status) => (status === 'online' ? 'En ligne' : 'Hors ligne')
 
-const statusClass = (status) => [
-  'rounded-full px-2.5 py-1 text-xs font-bold',
-  status === 'online' ? 'bg-[#d7ebdd] text-[#1e5a36]' : 'bg-[#f5c9c0] text-[#8a1f10]'
-]
-
 const resetForm = () => {
   const module = selectedModule.value
   if (!module) return
@@ -261,8 +253,10 @@ const saveModule = async () => {
 }
 
 const deleteModule = async () => {
+  deleting.value = true
   await modulesStore.deleteModule(selectedModule.value._id)
-  confirmingDelete.value = false
+  deleting.value = false
+  showDeleteDialog.value = false
   selectedId.value = null
 }
 
@@ -277,7 +271,6 @@ const copyKey = async () => {
 
 watch(selectedModule, () => {
   resetForm()
-  confirmingDelete.value = false
   copied.value = false
 }, {immediate: true})
 

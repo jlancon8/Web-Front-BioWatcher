@@ -8,3 +8,101 @@
 body {
     overflow-x: hidden;
 }
+
+.account-input {
+    min-height: 2.75rem;
+    border: 1px solid #c7d2c9;
+    border-radius: 0.5rem;
+    background: #fff;
+    padding: 0 0.75rem;
+    font-size: 0.875rem;
+    outline: none;
+}
+
+.account-input:focus {
+    border-color: #285d49;
+}
+
+.account-badge {
+    border-radius: 9999px;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: #f5f8f5;
+    color: #4a554d;
+}
+
+.account-badge--admin {
+    background: #14352a;
+    color: #fff;
+}
+
+.account-badge--gestionnaire {
+    background: #d9e4f5;
+    color: #1d3f73;
+}
+
+.account-badge--garde {
+    background: #e3f1e7;
+    color: #1e5a36;
+}
+
+.account-badge--sdis {
+    background: #fff0f0;
+    color: #b42318;
+}
+
+.account-badge--active {
+    background: #d7ebdd;
+    color: #1e5a36;
+}
+
+.account-badge--inactive {
+    background: #e6e8e4;
+    color: #4a554d;
+}
+
+.module-input {
+    min-height: 2.75rem;
+    border: 1px solid #c7d2c9;
+    border-radius: 0.5rem;
+    padding: 0 0.75rem;
+    font-size: 0.875rem;
+    outline: none;
+}
+
+.module-input:focus {
+    border-color: #285d49;
+}
+
+.module-input--short {
+    width: 8rem;
+}
+
+.module-badge {
+    border-radius: 9999px;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: #f5c9c0;
+    color: #8a1f10;
+}
+
+.module-badge--online {
+    background: #d7ebdd;
+    color: #1e5a36;
+}
+
+.history-select {
+    min-height: 2.75rem;
+    border: 1px solid #c7d2c9;
+    border-radius: 0.5rem;
+    background: #fff;
+    padding: 0 0.75rem;
+    font-size: 0.875rem;
+    outline: none;
+}
+
+.history-select:focus {
+    border-color: #285d49;
+}

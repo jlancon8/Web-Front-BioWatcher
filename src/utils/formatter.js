@@ -1,9 +1,8 @@
 const ROLES = [
     { label: 'Administrateur', value: 'admin' },
-    { label: 'Gestionnaire', value: 'gestionnaire' },
+    { label: 'Gestionnaire du milieu naturel', value: 'gestionnaire' },
     { label: 'Garde forestier', value: 'garde' },
     { label: 'Services de secours', value: 'sdis' },
-    { label: 'Utilisateur', value: 'basic' }
 ]
 
 const formatDate = (date) => {

@@ -5,7 +5,7 @@
     <section class="mb-4 flex flex-wrap items-end gap-4 rounded-2xl border border-[#dce4dd] bg-white p-4 sm:px-5">
       <div class="flex min-w-[160px] flex-1 flex-col gap-1.5 sm:flex-none">
         <label for="history-module" class="text-[13px] text-[#55655b]">Module</label>
-        <select id="history-module" v-model="moduleId" :class="selectClass">
+        <select id="history-module" v-model="moduleId" class="history-select">
           <option v-for="module in modulesStore.modules" :key="module._id" :value="module._id">
             {{ module.name }}
           </option>
@@ -14,7 +14,7 @@
 
       <div class="flex min-w-[160px] flex-1 flex-col gap-1.5 sm:flex-none">
         <label for="history-type" class="text-[13px] text-[#55655b]">Type de mesure</label>
-        <select id="history-type" v-model="type" :class="selectClass">
+        <select id="history-type" v-model="type" class="history-select">
           <option v-for="item in types" :key="item" :value="item">{{ item }}</option>
         </select>
       </div>
@@ -194,9 +194,6 @@ const periods = [
   {key: '7d', label: '7 j', from: () => new Date(Date.now() - 7 * DAY)},
   {key: '30d', label: '30 j', from: () => new Date(Date.now() - 30 * DAY)},
 ]
-
-const selectClass =
-    'min-h-11 rounded-lg border border-[#c7d2c9] bg-white px-3 text-sm outline-none focus:border-[#285d49]'
 
 const moduleId = ref('')
 const type = ref('temperature')
