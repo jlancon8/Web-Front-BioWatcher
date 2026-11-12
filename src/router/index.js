@@ -16,7 +16,8 @@ const router = createRouter({
             component: DashboardView,
             meta: {
                 requiresAuth: true,
-                roles: ['admin', 'garde', 'gestionnaire']
+                roles: ['admin', 'garde', 'gestionnaire'],
+                hideNavbar: true
             },
             children: [
                 {
@@ -51,7 +52,8 @@ const router = createRouter({
         },
         {
             path: '/login',
-            component: () => import('@/views/LoginView.vue')
+            component: () => import('@/views/LoginView.vue'),
+            meta: { hideNavbar: true }
         },
         {
             path: '/',

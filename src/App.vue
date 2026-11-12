@@ -1,15 +1,11 @@
 <template>
-  <RouterView/>
-
+  <Navbar v-if="!route.meta.hideNavbar" />
+  <RouterView />
 </template>
 
 <script setup>
-import {useRoute, useRouter} from "vue-router";
-import {computed, onMounted} from "vue";
-import {useAuthStore} from "@/stores/modules/auth.store.js";
+import { useRoute } from 'vue-router'
+import Navbar from '@/components/Navbar.vue'
 
-const route = useRoute();
-
+const route = useRoute()
 </script>
-
-<style scoped></style>
