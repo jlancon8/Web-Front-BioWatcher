@@ -76,7 +76,8 @@
           <span :class="`module-badge module-badge--${selectedModule.status}`">{{ statusLabel(selectedModule.status) }}</span>
         </div>
 
-        <form class="flex flex-col gap-4" @submit.prevent="saveModule">
+        <form class="flex flex-col gap-4" @submit.prevent="saveModule" :class="authStore.currentUser.rights.includes('garde') ? 'opacity-50' : ''">
+          <fieldset :disabled="authStore.currentUser.rights.includes('garde')" class="flex min-w-0 flex-col gap-4">
           <div class="flex flex-col gap-1.5">
             <label for="module-name" class="text-[13px] text-[#55655b]">Nom</label>
             <input id="module-name" v-model="form.name" type="text" class="module-input"/>
@@ -122,7 +123,7 @@
               </code>
               <button
                   type="button"
-                  class="min-h-11 cursor-pointer rounded-lg border border-[#c7d2c9] bg-white px-3.5 text-[13px] hover:bg-[#f5f8f5]"
+                  class="min-h-11 cursor-pointer rounded-lg border border-[#c7d2c9] bg-white px-3.5 text-[13px] hover:bg-[#f5f8f5] disabled:cursor-not-allowed"
                   @click="copyKey"
               >
                 {{ copied ? 'Copié' : 'Copier' }}
@@ -149,14 +150,17 @@
               {{ confirmingUpdate ? 'Confirmer la modification' : 'Enregistrer' }}
             </button>
           </div>
+          </fieldset>
         </form>
 
         <div class="flex items-center justify-between gap-3 border-t border-[#e3e9e4] pt-4">
           <p class="text-[13px] text-[#55655b]">Supprimer ce module et ses mesures</p>
           <button
               type="button"
-              class="min-h-11 shrink-0 cursor-pointer rounded-lg border border-[#e5b0a6] bg-white px-3.5 text-[13px] font-bold text-[#8a1f10] hover:bg-[#fdf1ee]"
+              class="min-h-11 shrink-0 cursor-pointer rounded-lg border border-[#e5b0a6] bg-white px-3.5 text-[13px] font-bold text-[#8a1f10] hover:bg-[#fdf1ee] disabled:cursor-not-allowed"
               @click="showDeleteDialog = true"
+              :disabled="authStore.currentUser.rights.includes('garde')"
+              :class="authStore.currentUser.rights.includes('garde') ? 'opacity-50' : ''"
           >
             Supprimer
           </button>
@@ -188,9 +192,11 @@ import {computed, onMounted, ref, watch} from 'vue'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog.vue'
 import {useModulesStore} from '@/stores/modules/modules.store.js'
 import {useChipsetsStore} from '@/stores/modules/chipsets.store.js'
+import {useAuthStore} from "@/stores/modules/auth.store.js";
 
 const modulesStore = useModulesStore()
 const chipsetsStore = useChipsetsStore()
+const authStore = useAuthStore()
 
 const selectedId = ref(null)
 const search = ref('')
