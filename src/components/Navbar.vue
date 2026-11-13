@@ -20,86 +20,33 @@
         <span class="hidden sm:inline">Mon compte</span>
         <span class="sr-only sm:hidden">Mon compte</span>
       </RouterLink>
-
-      <div ref="root" class="relative">
-        <button
-            type="button"
-            class="block h-10 w-10 overflow-hidden rounded-full border-2 border-[#3f9a62] bg-[#d8eadd] hover:border-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:h-11 sm:w-11"
-            aria-haspopup="true"
-            :aria-expanded="open"
-            aria-label="Changer de photo de profil"
-            @click="open = !open"
-        >
-          <img :src="selected.src" :alt="selected.label" class="h-full w-full object-cover" />
-        </button>
-
-        <div
-            v-if="open"
-            class="absolute right-0 z-20 mt-3 w-64 rounded-2xl border border-[#dde3d8] bg-white p-4 text-[#17352b] shadow-lg"
-        >
-          <p class="text-sm font-extrabold">Photo de profil</p>
-          <p class="mt-0.5 text-[13px] text-[#4f5f56]">Choisissez un avatar.</p>
-
-          <div class="mt-3 grid grid-cols-3 gap-3">
-            <button
-                v-for="avatar in avatars"
-                :key="avatar.id"
-                type="button"
-                class="aspect-square overflow-hidden rounded-full border-2 bg-[#d8eadd] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2d6a4f]"
-                :class="selected.id === avatar.id ? 'border-[#2d6a4f] ring-2 ring-[#2d6a4f]/30' : 'border-transparent hover:border-[#c3cdc4]'"
-                :aria-pressed="selected.id === avatar.id"
-                :aria-label="avatar.label"
-                @click="choose(avatar)"
-            >
-              <img :src="avatar.src" :alt="avatar.label" class="h-full w-full object-cover" />
-            </button>
-          </div>
-        </div>
-      </div>
+      <img
+          v-if="authStore.currentUser"
+          :src="avatar.src"
+          :alt="avatar.label"
+          class="h-20 w-20 shrink-0 rounded-lg border-2 border-[#3f9a62] bg-[#d8eadd] object-cover sm:h-11 sm:w-11"
+      />
     </div>
   </header>
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useAuthStore } from '@/stores/modules/auth.store.js'
 
-const emit = defineEmits(['avatar-change'])
+const authStore = useAuthStore()
 
 const avatars = [
-  { id: 1, src: '/avatars/avatar-1.png', label: 'Avatar 1' },
-  { id: 2, src: '/avatars/avatar-2.png', label: 'Avatar 2' },
-  { id: 3, src: '/avatars/avatar-3.png', label: 'Avatar 3' },
-  { id: 4, src: '/avatars/avatar-4.png', label: 'Avatar 4' },
-  { id: 5, src: '/avatars/avatar-5.png', label: 'Avatar 5' },
-  { id: 6, src: '/avatars/avatar-6.png', label: 'Avatar 6' }
+  {id: 'avatar-1', src: '/avatars/avatar-1.webp', label: 'Avatar 1'},
+  {id: 'avatar-2', src: '/avatars/avatar-2.webp', label: 'Avatar 2'},
+  {id: 'avatar-3', src: '/avatars/avatar-3.webp', label: 'Avatar 3'},
+  {id: 'avatar-4', src: '/avatars/avatar-4.webp', label: 'Avatar 4'},
+  {id: 'avatar-5', src: '/avatars/avatar-5.webp', label: 'Avatar 5'},
+  {id: 'avatar-6', src: '/avatars/avatar-6.webp', label: 'Avatar 6'}
 ]
 
-const selected = ref(avatars[0])
-const open = ref(false)
-const root = ref(null)
-
-function choose(avatar) {
-  selected.value = avatar
-  open.value = false
-  emit('avatar-change', avatar)
-}
-
-function onClickOutside(e) {
-  if (root.value && !root.value.contains(e.target)) open.value = false
-}
-
-function onKeydown(e) {
-  if (e.key === 'Escape') open.value = false
-}
-
-onMounted(() => {
-  document.addEventListener('click', onClickOutside)
-  document.addEventListener('keydown', onKeydown)
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', onClickOutside)
-  document.removeEventListener('keydown', onKeydown)
-})
+const avatar = computed(() =>
+    avatars.find(a => a.id === authStore.currentUser?.avatar) ?? avatars[0]
+)
 </script>

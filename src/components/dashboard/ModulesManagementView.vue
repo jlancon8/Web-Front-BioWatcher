@@ -78,33 +78,33 @@
 
         <form class="flex flex-col gap-4" @submit.prevent="saveModule" :class="authStore.currentUser.rights.includes('garde') ? 'opacity-50' : ''">
           <fieldset :disabled="authStore.currentUser.rights.includes('garde')" class="flex min-w-0 flex-col gap-4">
-          <div class="flex flex-col gap-1.5">
-            <label for="module-name" class="text-[13px] text-[#55655b]">Nom</label>
-            <input id="module-name" v-model="form.name" type="text" class="module-input"/>
-          </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="module-name" class="text-[13px] text-[#55655b]">Nom</label>
+              <input id="module-name" v-model="form.name" type="text" class="module-input"/>
+            </div>
 
-          <div class="flex flex-col gap-1.5">
-            <label for="module-short-name" class="text-[13px] text-[#55655b]">Nom court</label>
-            <input id="module-short-name" v-model="form.shortName" type="text" class="module-input"/>
-          </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="module-short-name" class="text-[13px] text-[#55655b]">Nom court</label>
+              <input id="module-short-name" v-model="form.shortName" type="text" class="module-input"/>
+            </div>
 
-          <div class="flex flex-col gap-1.5">
-            <label for="module-interval" class="text-[13px] text-[#55655b]">
-              Intervalle d'envoi des mesures (secondes)
-            </label>
-            <input
-                id="module-interval"
-                v-model.number="form.sendInterval"
-                type="number"
-                min="1"
-                step="1"
-                class="module-input module-input--short"
-            />
-          </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="module-interval" class="text-[13px] text-[#55655b]">
+                Intervalle d'envoi des mesures (secondes)
+              </label>
+              <input
+                  id="module-interval"
+                  v-model.number="form.sendInterval"
+                  type="number"
+                  min="1"
+                  step="1"
+                  class="module-input module-input--short"
+              />
+            </div>
 
-          <div class="flex flex-col gap-1.5">
-            <p class="text-[13px] text-[#55655b]">Chipsets</p>
-            <div class="flex flex-wrap gap-1.5">
+            <div class="flex flex-col gap-1.5">
+              <p class="text-[13px] text-[#55655b]">Chipsets</p>
+              <div class="flex flex-wrap gap-1.5">
               <span
                   v-for="chipset in selectedModule.chipsets"
                   :key="chipset"
@@ -112,44 +112,35 @@
               >
                 {{ chipsetsStore.getChipsetById(chipset)?.name }}
               </span>
+              </div>
             </div>
-          </div>
 
-          <div class="flex flex-col gap-1.5">
-            <p class="text-[13px] text-[#55655b]">Clé du module</p>
-            <div class="flex items-center gap-2">
-              <code class="min-w-0 flex-1 truncate rounded-lg bg-[#eef2ec] px-3 py-2.5 text-xs">
-                {{ selectedModule.key }}
-              </code>
+            <div class="flex flex-col gap-1.5">
+              <p class="text-[13px] text-[#55655b]">Clé du module</p>
+              <div class="flex items-center gap-2">
+                <code class="min-w-0 flex-1 truncate rounded-lg bg-[#eef2ec] px-3 py-2.5 text-xs">
+                  {{ selectedModule.key }}
+                </code>
+                <button
+                    type="button"
+                    class="min-h-11 cursor-pointer rounded-lg border border-[#c7d2c9] bg-white px-3.5 text-[13px] hover:bg-[#f5f8f5] disabled:cursor-not-allowed"
+                    @click="copyKey"
+                >
+                  {{ copied ? 'Copié' : 'Copier' }}
+                </button>
+              </div>
+            </div>
+
+            <div class="flex gap-2">
               <button
                   type="button"
-                  class="min-h-11 cursor-pointer rounded-lg border border-[#c7d2c9] bg-white px-3.5 text-[13px] hover:bg-[#f5f8f5] disabled:cursor-not-allowed"
-                  @click="copyKey"
+                  :disabled="!isDirty || !isValid"
+                  class="min-h-11 flex-1 cursor-pointer rounded-[10px] bg-[#14352a] px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  @click="showUpdateDialog = true"
               >
-                {{ copied ? 'Copié' : 'Copier' }}
+                Enregistrer
               </button>
             </div>
-          </div>
-
-          <div class="flex gap-2">
-            <button
-                v-if="confirmingUpdate"
-                type="button"
-                class="min-h-11 flex-1 cursor-pointer rounded-[10px] border border-[#c7d2c9] bg-white px-4 text-sm hover:bg-[#f5f8f5]"
-                @click="confirmingUpdate = false"
-            >
-              Annuler
-            </button>
-
-            <button
-                type="button"
-                :disabled="!isDirty || !isValid"
-                class="min-h-11 flex-1 cursor-pointer rounded-[10px] bg-[#14352a] px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
-                @click="confirmingUpdate ? saveModule() : (confirmingUpdate = true)"
-            >
-              {{ confirmingUpdate ? 'Confirmer la modification' : 'Enregistrer' }}
-            </button>
-          </div>
           </fieldset>
         </form>
 
@@ -184,12 +175,22 @@
     >
       Cette action est irréversible. Le module et toutes ses mesures seront définitivement supprimés.
     </ConfirmDeleteDialog>
+
+    <ConfirmUpdateDialog
+        v-model="showUpdateDialog"
+        title="Enregistrer les modifications"
+        :loading="saving"
+        @confirm="confirmUpdate"
+    >
+      Les réglages de {{ selectedModule?.name }} seront mis à jour.
+    </ConfirmUpdateDialog>
   </main>
 </template>
 
 <script setup>
 import {computed, onMounted, ref, watch} from 'vue'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog.vue'
+import ConfirmUpdateDialog from '@/components/common/ConfirmUpdateDialog.vue'
 import {useModulesStore} from '@/stores/modules/modules.store.js'
 import {useChipsetsStore} from '@/stores/modules/chipsets.store.js'
 import {useAuthStore} from "@/stores/modules/auth.store.js";
@@ -204,7 +205,8 @@ const statusFilter = ref('')
 const form = ref({name: '', shortName: '', sendInterval: 60})
 const showDeleteDialog = ref(false)
 const deleting = ref(false)
-const confirmingUpdate = ref(false)
+const showUpdateDialog = ref(false)
+const saving = ref(false)
 const copied = ref(false)
 
 const selectedModule = computed(() =>
@@ -254,8 +256,13 @@ const saveModule = async () => {
     shortName: form.value.shortName.trim(),
     sendInterval: form.value.sendInterval
   })
+}
 
-  confirmingUpdate.value = false
+const confirmUpdate = async () => {
+  saving.value = true
+  await saveModule()
+  saving.value = false
+  showUpdateDialog.value = false
 }
 
 const deleteModule = async () => {

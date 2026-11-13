@@ -1,5 +1,5 @@
 <template>
-  <Navbar v-if="!route.meta.hideNavbar" />
+  <Navbar v-if="route.matched.length && !route.meta.hideNavbar" />
   <RouterView />
 </template>
 

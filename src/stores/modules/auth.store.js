@@ -43,7 +43,6 @@ export const useAuthStore = defineStore('auth', () => {
 
             currentUser.value = response.data;
             isAuthenticated.value = true;
-
             return true;
 
         } catch (err) {
@@ -58,6 +57,6 @@ export const useAuthStore = defineStore('auth', () => {
         isAuthenticated,
         login,
         logout,
-        checkAuth
+        checkAuth,
     };
 });

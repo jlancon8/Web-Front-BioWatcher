@@ -12,7 +12,9 @@
         <path d="M4 6h16M4 12h16M4 18h16"/>
       </svg>
     </button>
+    <RouterLink to="/">
     <span class="text-lg font-bold tracking-tight">BioWatcher</span>
+    </RouterLink>
     <span class="w-10"></span>
   </header>
 
@@ -30,7 +32,9 @@
       ]"
   >
     <div class="flex items-center justify-between px-8 pt-[30px] pb-[31px]">
+      <RouterLink to="/">
       <h1 class="text-[21px] font-bold tracking-tight">BioWatcher</h1>
+      </RouterLink>
       <button
           type="button"
           class="cursor-pointer rounded-lg p-1 hover:bg-[#1d493a] md:hidden"

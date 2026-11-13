@@ -24,7 +24,6 @@
             <th class="px-2 py-3.5 font-medium">Utilisateur</th>
             <th class="px-2 py-3.5 font-medium">Rôle</th>
             <th class="px-2 py-3.5 font-medium">Dernière connexion</th>
-            <th class="px-2 py-3.5 font-medium">Statut</th>
           </tr>
           </thead>
 
@@ -42,7 +41,7 @@
           >
             <td class="px-2 py-3.5">
               <p class="font-extrabold text-[#1b2a22]">
-                {{ account.login }}
+                {{ account.name ?? account.login }}
               </p>
               <p class="text-xs text-[#55655b]">
                 {{ account.email }}
@@ -58,12 +57,6 @@
             <td class="px-2 py-3.5">
               {{ account.lastLogin ? formatDate(account.lastLogin) : 'Jamais' }}
             </td>
-
-            <td class="px-2 py-3.5">
-              <span :class="`account-badge account-badge--${account.active ? 'active' : 'inactive'}`">
-                {{ account.active ? 'Actif' : 'Désactivé' }}
-              </span>
-            </td>
           </tr>
           </tbody>
         </table>
@@ -75,127 +68,156 @@
             class="flex flex-col gap-4 rounded-2xl border border-[#dce4dd] bg-white p-5 md:p-6"
         >
           <h2 class="truncate text-[17px] font-extrabold text-[#1b2a22]">
-            {{ creating ? 'Nouveau compte' : selectedAccount.login }}
+            {{ creating ? 'Nouveau compte' : (selectedAccount.name ?? selectedAccount.login) }}
           </h2>
+
+          <p
+              v-if="isAdminTarget"
+              class="rounded-lg bg-[#f5f8f5] px-3.5 py-2.5 text-[13px] text-[#55655b]"
+          >
+            Le profil d'un administrateur ne peut pas être modifié ici.
+          </p>
 
           <form
               class="flex flex-col gap-4"
-              @submit.prevent="saveAccount"
+              @submit.prevent="onSubmit"
           >
-            <div class="flex flex-col gap-1.5">
-              <label
-                  for="account-login"
-                  class="text-[13px] text-[#55655b]"
-              >
-                Identifiant
-              </label>
-
-              <input
-                  id="account-login"
-                  v-model="form.login"
-                  type="text"
-                  autocomplete="off"
-                  class="account-input"
-              />
-            </div>
-
-            <div class="flex flex-col gap-1.5">
-              <label
-                  for="account-email"
-                  class="text-[13px] text-[#55655b]"
-              >
-                Adresse e-mail
-              </label>
-
-              <input
-                  id="account-email"
-                  v-model="form.email"
-                  type="email"
-                  autocomplete="off"
-                  class="account-input"
-              />
-            </div>
-
-            <div class="flex flex-col gap-1.5">
-              <label
-                  for="account-role"
-                  class="text-[13px] text-[#55655b]"
-              >
-                Rôle
-              </label>
-
-              <select
-                  id="account-role"
-                  v-model="form.role"
-                  class="account-input"
-              >
-                <option
-                    v-for="role in ROLES"
-                    :key="role.value"
-                    :value="role.label"
-                >
-                  {{ role.label }}
-                </option>
-              </select>
-            </div>
-
-            <div
-                v-if="creating"
-                class="flex flex-col gap-1.5"
+            <fieldset
+                :disabled="isAdminTarget"
+                class="m-0 flex min-w-0 flex-col gap-4 border-0 p-0"
             >
-              <label
-                  for="account-password"
-                  class="text-[13px] text-[#55655b]"
+              <div class="flex flex-col gap-1.5">
+                <label
+                    for="account-name"
+                    class="text-[13px] text-[#55655b]"
+                >
+                  Nom
+                </label>
+
+                <input
+                    id="account-name"
+                    v-model="form.name"
+                    type="text"
+                    autocomplete="off"
+                    class="account-input"
+                />
+              </div>
+
+              <div class="flex flex-col gap-1.5" v-if="creating">
+                <label
+                    for="account-login"
+                    class="text-[13px] text-[#55655b]"
+                >
+                  Identifiant
+                </label>
+
+                <input
+                    id="account-login"
+                    v-model="form.login"
+                    type="text"
+                    autocomplete="off"
+                    class="account-input"
+                />
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label
+                    for="account-email"
+                    class="text-[13px] text-[#55655b]"
+                >
+                  Adresse e-mail
+                </label>
+
+                <input
+                    id="account-email"
+                    v-model="form.email"
+                    type="email"
+                    autocomplete="off"
+                    class="account-input"
+                />
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label
+                    for="account-role"
+                    class="text-[13px] text-[#55655b]"
+                >
+                  Rôle
+                </label>
+
+                <select
+                    id="account-role"
+                    v-model="form.role"
+                    class="account-input"
+                >
+                  <option
+                      v-for="role in assignableRoles"
+                      :key="role.value"
+                      :value="role.label"
+                  >
+                    {{ role.label }}
+                  </option>
+                </select>
+              </div>
+
+              <div
+                  v-if="creating"
+                  class="flex flex-col gap-1.5"
               >
-                Mot de passe
-              </label>
+                <label
+                    for="account-password"
+                    class="text-[13px] text-[#55655b]"
+                >
+                  Mot de passe
+                </label>
 
-              <input
-                  id="account-password"
-                  v-model="form.password"
-                  type="password"
-                  autocomplete="new-password"
-                  class="account-input"
-              />
+                <input
+                    id="account-password"
+                    v-model="form.password"
+                    type="password"
+                    autocomplete="new-password"
+                    class="account-input"
+                />
 
-              <p class="text-xs text-[#55655b]">
-                8 caractères minimum
-              </p>
-            </div>
+                <p class="text-xs text-[#55655b]">
+                  8 caractères minimum
+                </p>
+              </div>
 
-            <div class="flex flex-wrap gap-2">
-              <button
-                  type="submit"
-                  :disabled="!isDirty || !isValid || saving"
-                  class="min-h-11 flex-1 cursor-pointer rounded-[10px] bg-[#14352a] px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {{
-                  saving
-                      ? 'Enregistrement...'
-                      : creating
-                          ? 'Créer le compte'
-                          : 'Enregistrer'
-                }}
-              </button>
+              <div class="flex flex-wrap gap-2">
+                <button
+                    type="submit"
+                    :disabled="!isDirty || !isValid || saving"
+                    class="min-h-11 flex-1 cursor-pointer rounded-[10px] bg-[#14352a] px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {{
+                    saving
+                        ? 'Enregistrement...'
+                        : creating
+                            ? 'Créer le compte'
+                            : 'Enregistrer'
+                  }}
+                </button>
 
-              <button
-                  type="button"
-                  :disabled="saving || (!creating && !isDirty)"
-                  class="min-h-11 cursor-pointer rounded-[10px] border border-[#c7d2c9] bg-white px-4 text-sm hover:bg-[#f5f8f5] disabled:cursor-not-allowed disabled:opacity-40"
-                  @click="cancel"
-              >
-                Annuler
-              </button>
+                <button
+                    type="button"
+                    :disabled="saving || (!creating && !isDirty)"
+                    class="min-h-11 cursor-pointer rounded-[10px] border border-[#c7d2c9] bg-white px-4 text-sm hover:bg-[#f5f8f5] disabled:cursor-not-allowed disabled:opacity-40"
+                    @click="cancel"
+                >
+                  Annuler
+                </button>
 
-              <button
-                  v-if="!creating"
-                  type="button"
-                  class="min-h-11 w-full cursor-pointer rounded-lg border border-[#e5b0a6] bg-white px-3.5 text-[13px] font-bold text-[#8a1f10] hover:bg-[#fdf1ee]"
-                  @click="showDeleteDialog = true"
-              >
-                Supprimer le compte
-              </button>
-            </div>
+                <button
+                    v-if="!creating"
+                    type="button"
+                    class="min-h-11 w-full cursor-pointer rounded-lg border border-[#e5b0a6] bg-white px-3.5 text-[13px] font-bold text-[#8a1f10] hover:bg-[#fdf1ee] disabled:cursor-not-allowed disabled:opacity-50"
+                    @click="showDeleteDialog = true"
+                >
+                  Supprimer le compte
+                </button>
+              </div>
+            </fieldset>
           </form>
         </aside>
       </div>
@@ -210,12 +232,22 @@
     >
       Cette action est irréversible. Le compte sera définitivement supprimé.
     </ConfirmDeleteDialog>
+
+    <ConfirmUpdateDialog
+        v-model="showSaveDialog"
+        title="Enregistrer les modifications"
+        :loading="saving"
+        @confirm="confirmSave"
+    >
+      Les informations de {{ selectedAccount?.name ?? selectedAccount?.login }} seront mises à jour.
+    </ConfirmUpdateDialog>
   </main>
 </template>
 
 <script setup>
 import {computed, onMounted, ref} from 'vue'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog.vue'
+import ConfirmUpdateDialog from '@/components/common/ConfirmUpdateDialog.vue'
 import {useUsersStore} from '@/stores/modules/users.store.js'
 import {formatDate, formatRole, ROLES} from '@/utils/formatter.js'
 
@@ -226,6 +258,7 @@ onMounted(async () => {
 })
 
 const emptyForm = () => ({
+  name: '',
   login: '',
   email: '',
   role: ROLES[0].label,
@@ -237,10 +270,18 @@ const creating = ref(false)
 const saving = ref(false)
 const deleting = ref(false)
 const showDeleteDialog = ref(false)
+const showSaveDialog = ref(false)
 const form = ref(emptyForm())
+
+// admin accounts are created from the console, never from the ui
+const assignableRoles = computed(() => ROLES.filter(role => role.value !== 'admin'))
 
 const selectedAccount = computed(() =>
     userStore.users.find(account => account._id === selectedId.value) ?? null
+)
+
+const isAdminTarget = computed(() =>
+    !creating.value && !!selectedAccount.value?.rights?.includes('admin')
 )
 
 const isDirty = computed(() => {
@@ -248,7 +289,8 @@ const isDirty = computed(() => {
     return (
         form.value.login.trim() !== '' ||
         form.value.email !== '' ||
-        form.value.password !== ''
+        form.value.password !== '' ||
+        form.value.name !== ''
     )
   }
 
@@ -257,44 +299,28 @@ const isDirty = computed(() => {
   return !!account && (
       form.value.login !== account.login ||
       form.value.email !== account.email ||
-      form.value.role !== formatRole(account.rights)
+      form.value.role !== formatRole(account.rights) ||
+      form.value.name !== (account.name ?? '')
   )
 })
-
-const deleteAccount = async () => {
-  const account = selectedAccount.value
-
-  if (!account) return
-
-  deleting.value = true
-  await userStore.deleteUser(account._id)
-  deleting.value = false
-  showDeleteDialog.value = false
-
-  selectedId.value = null
-  creating.value = false
-  form.value = emptyForm()
-}
 
 // verify that the form is valid before saving
 const isValid = computed(() => {
   const validLogin = form.value.login.trim() !== '' && !/\s/.test(form.value.login) // login should not contain spaces
   const validEmail = /^\S+@\S+\.\S+$/.test(form.value.email)
+  const validRole = !!assignableRoles.value.find(role => role.label === form.value.role)
 
   if (creating.value) {
     return (
+        form.value.name !== '' &&
         validLogin &&
         validEmail &&
         form.value.password.length >= 8 &&
-        !!ROLES.find(role => role.label === form.value.role) && form.value.role
+        validRole
     )
   }
 
-  return (
-      validLogin &&
-      validEmail &&
-      !!ROLES.find(role => role.label === form.value.role)
-  )
+  return validLogin && validEmail && validRole
 })
 
 const resetForm = () => {
@@ -303,6 +329,7 @@ const resetForm = () => {
   form.value = account
       ? {
         login: account.login ?? '',
+        name: account.name ?? '',
         email: account.email ?? '',
         role: formatRole(account.rights),
         password: ''
@@ -335,37 +362,68 @@ const cancel = () => {
   resetForm()
 }
 
+const deleteAccount = async () => {
+  const account = selectedAccount.value
+
+  if (!account || isAdminTarget.value) return
+
+  deleting.value = true
+  await userStore.deleteUser(account._id)
+  deleting.value = false
+  showDeleteDialog.value = false
+
+  selectedId.value = null
+  creating.value = false
+  form.value = emptyForm()
+}
+
 // handle both creation and update of an account
 const saveAccount = async () => {
-  if (saving.value || !isValid.value) return
+  if (saving.value || !isValid.value || isAdminTarget.value) return
 
-  const role = ROLES.find(r => r.label === form.value.role)?.value
+  const role = assignableRoles.value.find(r => r.label === form.value.role)?.value
 
   const data = {
+    name: form.value.name,
     login: form.value.login.trim(),
     email: form.value.email.trim(),
     rights: [role]
   }
 
-  saving.value = true
-
   if (creating.value) {
+    saving.value = true
     data.password = form.value.password
     await userStore.createUser(data)
-  } else {
-    const account = selectedAccount.value
 
-    if (!account) return
-
-    await userStore.updateUser(account._id, data)
-  }
-
-  if (creating.value) {
     creating.value = false
     selectedId.value = null
     form.value = emptyForm()
-  } else {
-    resetForm()
+    saving.value = false
+    return
   }
+
+  const account = selectedAccount.value
+
+  if (!account) return
+
+  saving.value = true
+  await userStore.updateUser(account._id, data)
+  resetForm()
+}
+
+const onSubmit = () => {
+  if (creating.value) {
+    saveAccount()
+    return
+  }
+
+  if (isValid.value && isDirty.value && !isAdminTarget.value) {
+    showSaveDialog.value = true
+  }
+}
+
+const confirmSave = async () => {
+  await saveAccount()
+  showSaveDialog.value = false
 }
 </script>
