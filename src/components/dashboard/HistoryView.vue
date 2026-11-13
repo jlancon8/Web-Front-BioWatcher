@@ -240,6 +240,7 @@ watch([moduleId, type, period], loadData)
 onMounted(async () => {
   await modulesStore.getModules()
   await measuresStore.getMeasures()
+  await measuresStore.getMeasuresHistory(moduleId.value, type.value, item.from().toISOString(), currentPage.value, pageSize.value)
   moduleId.value = modulesStore.modules[0]?._id ?? ''
 })
 </script>

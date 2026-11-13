@@ -15,7 +15,18 @@
               <label for="nom" class="text-[13px] text-[#4f5f56]">Login</label>
               <input
                   id="nom"
-                  v-model="authStore.currentUser.login"
+                  v-model="accountForm.name"
+                  type="text"
+                  required
+                  class="w-full rounded-lg border border-[#c3cdc4] bg-white px-3.5 py-3 text-[15px] text-[#17352b] outline-none focus:border-[#2d6a4f] focus:ring-2 focus:ring-[#2d6a4f]/20"
+              />
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label for="nom" class="text-[13px] text-[#4f5f56]">Login</label>
+              <input
+                  id="nom"
+                  v-model="accountForm.login"
                   type="text"
                   required
                   class="w-full rounded-lg border border-[#c3cdc4] bg-white px-3.5 py-3 text-[15px] text-[#17352b] outline-none focus:border-[#2d6a4f] focus:ring-2 focus:ring-[#2d6a4f]/20"
@@ -26,7 +37,7 @@
               <label for="email" class="text-[13px] text-[#4f5f56]">Adresse e-mail</label>
               <input
                   id="email"
-                  v-model="authStore.currentUser.email"
+                  v-model="accountForm.email"
                   type="email"
                   required
                   class="w-full rounded-lg border border-[#c3cdc4] bg-white px-3.5 py-3 text-[15px] text-[#17352b] outline-none focus:border-[#2d6a4f] focus:ring-2 focus:ring-[#2d6a4f]/20"
@@ -37,7 +48,7 @@
               <label for="role" class="text-[13px] text-[#4f5f56]">Rôle</label>
               <input
                   id="role"
-                  :value="authStore.currentUser.rights"
+                  :value="formatRole(authStore.currentUser.rights)"
                   type="text"
                   disabled
                   class="w-full rounded-lg border border-[#dde3d8] bg-[#f2f4ee] px-3.5 py-3 text-[15px] text-[#4f5f56]"
@@ -48,7 +59,8 @@
             <div>
               <button
                   type="submit"
-                  class="min-h-11 rounded-lg bg-[#17352b] px-6 text-[15px] font-bold text-white hover:bg-[#1d4638] cursor-pointer"
+                  :disabled="!isDirty"
+                  class="min-h-11 rounded-lg bg-[#17352b] px-6 text-[15px] font-bold text-white hover:bg-[#1d4638] cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Enregistrer
               </button>
@@ -59,24 +71,12 @@
                 @submit.prevent="submitPassword">
             <h2 class="text-lg font-extrabold">Mot de passe</h2>
 
-            <div class="flex flex-col gap-1.5">
-              <label for="current" class="text-[13px] text-[#4f5f56]">Mot de passe actuel</label>
-              <input
-                  id="current"
-                  v-model="passwords.current"
-                  type="password"
-                  autocomplete="current-password"
-                  required
-                  class="w-full rounded-lg border border-[#c3cdc4] bg-white px-3.5 py-3 text-[15px] text-[#17352b] outline-none focus:border-[#2d6a4f] focus:ring-2 focus:ring-[#2d6a4f]/20"
-              />
-            </div>
-
             <div class="grid gap-4 sm:grid-cols-2">
               <div class="flex flex-col gap-1.5">
                 <label for="nouveau" class="text-[13px] text-[#4f5f56]">Nouveau mot de passe</label>
                 <input
                     id="nouveau"
-                    v-model="passwords.nouveau"
+                    v-model="passwords.newPassword"
                     type="password"
                     autocomplete="new-password"
                     required
@@ -87,7 +87,7 @@
                 <label for="confirmation" class="text-[13px] text-[#4f5f56]">Confirmation</label>
                 <input
                     id="confirmation"
-                    v-model="passwords.confirmation"
+                    v-model="passwords.confirmationPassword"
                     type="password"
                     autocomplete="new-password"
                     required
@@ -119,13 +119,15 @@
                   @click="openAvatarDialog"
               >
                 <img
-                    :src="selectedAvatar.src"
-                    :alt="selectedAvatar.label"
+                    :src="getAvatar(authStore.currentUser.avatar).src"
+                    :alt="getAvatar(authStore.currentUser.avatar).label"
                     class="h-full w-full rounded-full bg-[#d8eadd] object-cover"
                 />
-                <span class="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-[#17352b] text-white">
-                  <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                <span
+                    class="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-[#17352b] text-white">
+                  <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
                   </svg>
                 </span>
               </button>
@@ -140,29 +142,32 @@
                   formatRole(authStore.currentUser.rights)
                 }}</span>
             </div>
-            <div class="border-t border-[#e4e8df] pt-3.5 text-sm text-[#4f5f56]">
-              Dernière connexion : a faire frerot
-            </div>
-          </section>
-
-          <section class="flex flex-col gap-2.5 rounded-2xl border border-[#dde3d8] bg-white p-6">
-            <h2 class="text-lg font-extrabold">Ce que je peux faire</h2>
-            <p class="text-sm leading-relaxed text-[#33453b]">
-              a faire
-            </p>
-            <p class="text-sm leading-relaxed text-[#4f5f56]" v-if="!authStore.currentUser.rights.includes('admin')">
-              La création et la désactivation des comptes sont réservées aux administrateurs.
-            </p>
           </section>
 
           <button
               type="button"
               class="min-h-11 rounded-lg border border-[#e3b4ae] bg-white px-6 text-[15px] font-bold text-[#9a1b0e] hover:bg-[#fbeceb]"
+              @click="handleLogout"
           >
             Se déconnecter
           </button>
         </aside>
       </div>
+      <ConfirmUpdateDialog
+          v-model="isSaving"
+          title="Enregistrer les modifications"
+          @confirm="saveAccount"
+      >
+        Les informations de {{ authStore.currentUser.name ?? authStore.currentUser.login }} seront mises à jour.
+      </ConfirmUpdateDialog>
+
+      <ConfirmUpdateDialog
+          v-model="isSavingPassword"
+          title="Modifier le mot de passe"
+          @confirm="savePassword"
+      >
+        Votre mot de passe va être modifié.
+      </ConfirmUpdateDialog>
     </main>
 
     <dialog
@@ -182,12 +187,12 @@
               :key="avatar.id"
               type="button"
               class="aspect-square cursor-pointer overflow-hidden rounded-full border-2 bg-[#d8eadd] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2d6a4f]"
-              :class="selectedAvatar.id === avatar.id ? 'border-[#2d6a4f] ring-2 ring-[#2d6a4f]/30' : 'border-transparent hover:border-[#c3cdc4]'"
-              :aria-pressed="selectedAvatar.id === avatar.id"
+              :class="getAvatar(authStore.currentUser.avatar).id === avatar.id ? 'border-[#2d6a4f] ring-2 ring-[#2d6a4f]/30' : 'border-transparent hover:border-[#c3cdc4]'"
+              :aria-pressed="getAvatar(authStore.currentUser.avatar).id === avatar.id"
               :aria-label="avatar.label"
               @click="chooseAvatar(avatar)"
           >
-            <img :src="avatar.src" :alt="avatar.label" class="h-full w-full object-cover" />
+            <img :src="avatar.src" :alt="avatar.label" class="h-full w-full object-cover"/>
           </button>
         </div>
 
@@ -207,25 +212,60 @@
 import {computed, reactive, ref} from 'vue'
 import {useAuthStore} from "@/stores/modules/auth.store.js";
 import {formatRole} from "../utils/formatter.js";
+import ConfirmUpdateDialog from "@/components/common/ConfirmUpdateDialog.vue";
+import {useUsersStore} from "@/stores/modules/users.store.js";
+import router from "@/router/index.js";
+import {avatars, getAvatar} from "@/utils/avatars.js";
 
 const authStore = useAuthStore();
-const passwords = reactive({current: '', nouveau: '', confirmation: ''})
+const userStore = useUsersStore()
+const passwords = ref({newPassword: '', confirmationPassword: ''})
 const passwordError = ref('')
+const isSaving = ref(false)
+const isSavingPassword = ref(false)
 
-const avatars = [
-  {id: 'avatar-1', src: '/avatars/avatar-1.webp', label: 'Avatar 1'},
-  {id: 'avatar-2', src: '/avatars/avatar-2.webp', label: 'Avatar 2'},
-  {id: 'avatar-3', src: '/avatars/avatar-3.webp', label: 'Avatar 3'},
-  {id: 'avatar-4', src: '/avatars/avatar-4.webp', label: 'Avatar 4'},
-  {id: 'avatar-5', src: '/avatars/avatar-5.webp', label: 'Avatar 5'},
-  {id: 'avatar-6', src: '/avatars/avatar-6.webp', label: 'Avatar 6'}
-]
+const accountForm = ref({
+  name: authStore.currentUser.name,
+  login: authStore.currentUser.login,
+  email: authStore.currentUser.email,
+})
 
-const selectedAvatar = computed(() =>
-    avatars.find(avatar => avatar.id === authStore.currentUser.avatar) ?? avatars[0]
+const isValid = computed(() => {
+  const validLogin = accountForm.value.login.trim() !== '' && !/\s/.test(accountForm.value.login)
+  const validEmail = /^\S+@\S+\.\S+$/.test(accountForm.value.email)
+
+  return validLogin && validEmail
+})
+
+const isDirty = computed(() =>
+        isValid.value && (
+            accountForm.value.login !== authStore.currentUser.login ||
+            accountForm.value.email !== authStore.currentUser.email ||
+            accountForm.value.name !== authStore.currentUser.name
+        )
 )
 
 const avatarDialog = ref(null)
+
+function submitProfile() {
+  if (!isDirty.value) return
+  isSaving.value = true
+}
+
+async function saveAccount() {
+  const {name, login, email} = accountForm.value
+  try {
+    await authStore.updateSelfProfile({name, login, email})
+    isSaving.value = false
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function handleLogout() {
+  await authStore.logout()
+  router.push('/login')
+}
 
 function openAvatarDialog() {
   avatarDialog.value?.showModal()
@@ -235,22 +275,38 @@ function closeAvatarDialog() {
   avatarDialog.value?.close()
 }
 
-function chooseAvatar(avatar) {
-  authStore.currentUser.avatar = avatar.id
-  closeAvatarDialog()
-}
+async function chooseAvatar(avatar) {
+  const updated = await authStore.updateSelfProfile({
+    avatar: avatar.id
+  });
 
-function submitProfile() {
+  if (updated) {
+    closeAvatarDialog();
+  }
 }
 
 function submitPassword() {
   passwordError.value = ''
-  if (passwords.nouveau.length < 8) {
+  if (passwords.value.newPassword.length < 8) {
     passwordError.value = 'Le nouveau mot de passe doit faire au moins 8 caractères.'
     return
   }
-  if (passwords.nouveau !== passwords.confirmation) {
+  if (passwords.value.newPassword !== passwords.value.confirmationPassword) {
     passwordError.value = 'La confirmation ne correspond pas.'
+    return
+  }
+  isSavingPassword.value = true
+}
+
+async function savePassword() {
+  try {
+    await authStore.updateSelfProfile({password: passwords.value.newPassword})
+    passwords.value = {newPassword: '', confirmationPassword: ''}
+  } catch (e) {
+    console.error(e)
+    passwordError.value = 'Impossible de modifier le mot de passe.'
+  } finally {
+    isSavingPassword.value = false
   }
 }
 </script>

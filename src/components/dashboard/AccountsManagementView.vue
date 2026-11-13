@@ -21,9 +21,10 @@
         <table class="w-full min-w-[560px] border-collapse text-sm">
           <thead>
           <tr class="text-left text-[13px] text-[#55655b]">
-            <th class="px-2 py-3.5 font-medium">Utilisateur</th>
+            <th class="px-2 py-3.5 font-medium">Avatar</th>
+            <th class="px-2 py-3.5 font-medium">Nom</th>
+            <th class="px-2 py-3.5 font-medium">Email</th>
             <th class="px-2 py-3.5 font-medium">Rôle</th>
-            <th class="px-2 py-3.5 font-medium">Dernière connexion</th>
           </tr>
           </thead>
 
@@ -40,22 +41,27 @@
               @click="selectAccount(account._id)"
           >
             <td class="px-2 py-3.5">
-              <p class="font-extrabold text-[#1b2a22]">
-                {{ account.name ?? account.login }}
+              <img
+                  :src="getAvatar(account.avatar).src"
+                  :alt="getAvatar(account.avatar).label"
+                  class="h-10 w-10 rounded-full bg-[#d8eadd] object-cover"
+              />
+            </td>
+
+            <td class="px-2 py-3.5">
+              <p class="font-bold text-[#1b2a22]">
+                {{ account.name }}
               </p>
-              <p class="text-xs text-[#55655b]">
-                {{ account.email }}
-              </p>
+            </td>
+
+            <td class="px-2 py-3.5">
+              {{ account.email }}
             </td>
 
             <td class="px-2 py-3.5">
               <span :class="`account-badge account-badge--${account.rights?.[0] ?? 'basic'}`">
                 {{ formatRole(account.rights) }}
               </span>
-            </td>
-
-            <td class="px-2 py-3.5">
-              {{ account.lastLogin ? formatDate(account.lastLogin) : 'Jamais' }}
             </td>
           </tr>
           </tbody>
@@ -73,7 +79,7 @@
 
           <p
               v-if="isAdminTarget"
-              class="rounded-lg bg-[#f5f8f5] px-3.5 py-2.5 text-[13px] text-[#55655b]"
+              class="rounded-lg bg-[#f5f8f5] px-3.5 py-2.5 text-[14px] text-[#55655b]"
           >
             Le profil d'un administrateur ne peut pas être modifié ici.
           </p>
@@ -250,8 +256,11 @@ import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog.vue'
 import ConfirmUpdateDialog from '@/components/common/ConfirmUpdateDialog.vue'
 import {useUsersStore} from '@/stores/modules/users.store.js'
 import {formatDate, formatRole, ROLES} from '@/utils/formatter.js'
+import {getAvatar} from "@/utils/avatars.js";
+import {useAuthStore} from "@/stores/modules/auth.store.js";
 
 const userStore = useUsersStore()
+
 
 onMounted(async () => {
   await userStore.getUsers()

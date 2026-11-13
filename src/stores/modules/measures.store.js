@@ -8,9 +8,14 @@ export const useMeasuresStore = defineStore('measures', () => {
     const latestMeasures = ref([])
     const measuresStats = ref([])
     const measuresChartData = ref([])
+    const measuresHistory = ref([])
 
     const setMeasuresState = (newMeasures) => {
         measures.value = newMeasures
+    }
+
+    const setMeasuresHistoryState = (newMeasuresHistory) => {
+        measuresHistory.value = newMeasuresHistory
     }
 
     const setLatestMeasuresState = (newMeasures) => {
@@ -47,6 +52,17 @@ export const useMeasuresStore = defineStore('measures', () => {
         }
     }
 
+    const getMeasuresHistory = async (moduleId, type, from, page = 1, limit = 5) => {
+        try {
+            const response = await measuresService.getMeasuresHistory(moduleId, type, from, page, limit);
+            setMeasuresHistoryState(response.data)
+            return response.data
+        } catch (e) {
+            console.error(e)
+            return null
+        }
+    }
+
     const getMeasuresStats = async (moduleId, type, from, to) => {
         try {
             const response = await measuresService.getMeasuresStats(moduleId, type, from, to);
@@ -77,6 +93,8 @@ export const useMeasuresStore = defineStore('measures', () => {
         latestMeasures,
         measuresChartData,
         getMeasuresChartData,
-        measures
+        measures,
+        measuresHistory,
+        getMeasuresHistory
     }
 })

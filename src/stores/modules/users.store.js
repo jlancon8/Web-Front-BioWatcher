@@ -1,10 +1,12 @@
 import {ref} from 'vue'
 import {defineStore} from 'pinia'
 import usersService from "@/services/users.service.js"
+import {useNotificationStore} from "@/stores/modules/notifs.store.js";
 
 export const useUsersStore = defineStore('users', () => {
     // state
     const users = ref([])
+    const notificationsStore = useNotificationStore()
 
     const setUsersState = (accounts) => {
         users.value = accounts
@@ -37,19 +39,37 @@ export const useUsersStore = defineStore('users', () => {
     const updateUser = async (idUser, data) => {
         try {
             const response = await usersService.updateUser(idUser, data);
-            console.log("response updated user:", JSON.stringify(response.data))
             updateUserState(response.data)
+            notificationsStore.notify('Utilisateur mis à jour')
+            return response.data
         } catch (e) {
             console.error(e)
+            notificationsStore.notify('Échec de la mise à jour de l\'utilisateur', 'error')
+            return null
+        }
+    }
+
+    const updateMe = async (idUser, data) => {
+        try {
+            const response = await usersService.updateMe(idUser, data);
+            updateUserState(response.data)
+            notificationsStore.notify('Utilisateur mis à jour')
+            return response.data
+        } catch (e) {
+            console.error(e)
+            notificationsStore.notify('Échec de la mise à jour de l\'utilisateur', 'error')
+            return null
         }
     }
 
     const createUser = async (data) => {
         try {
             const response = await usersService.createUser(data);
+            notificationsStore.notify('Utilisateur crée avec succès')
             createUserState(response.data)
         } catch (e) {
             console.error(e)
+            notificationsStore.notify('Échec de la mise à jour de l\'utilisateur', 'error')
         }
     }
 
@@ -70,6 +90,7 @@ export const useUsersStore = defineStore('users', () => {
         getUsers,
         users,
         getUserById,
+        updateMe,
         updateUser,
         createUser,
         deleteUser

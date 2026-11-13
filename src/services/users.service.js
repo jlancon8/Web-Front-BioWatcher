@@ -28,6 +28,20 @@ async function updateUsersFromAPI(idUser, data) {
     return patchRequest("/users", {idUser, data},"UPDATE-USERS")
 }
 
+export async function updateMe(idUser, data) {
+    let response = null;
+    try {
+        response = await updateMeFromAPI(idUser, data);
+    } catch (err){
+        response = {error:1, status:404,data:'erreur réseau, impossible de modifier le compte'}
+    }
+    return response;
+}
+
+async function updateMeFromAPI(idUser, data) {
+    return patchRequest("/me", {idUser, data},"UPDATE-USERS")
+}
+
 export async function createUser(data) {
     let response = null;
     try {
@@ -59,6 +73,7 @@ async function deleteUserFromAPI(idUser) {
 export default {
     getUsers,
     updateUser,
+    updateMe,
     createUser,
     deleteUser
 }

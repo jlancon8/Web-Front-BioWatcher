@@ -1,10 +1,12 @@
 import {ref} from 'vue'
 import {defineStore} from 'pinia'
 import modulesService from "@/services/modules.service.js"
+import {useNotificationStore} from "@/stores/modules/notifs.store.js";
 
 export const useModulesStore = defineStore('modules', () => {
     // state
     const modules = ref([])
+    const notificationsStore = useNotificationStore()
 
     const setModulesState = (newModules) => {
         modules.value = newModules
@@ -34,8 +36,10 @@ export const useModulesStore = defineStore('modules', () => {
         try {
             const response = await modulesService.deleteModule(idModule);
             deleteModuleState(response.data._id)
+            notificationsStore.notify('Suppression effectué avec succès')
         } catch (e) {
             console.error(e)
+            notificationsStore.notify('Échec de la suppression du module', 'error')
         }
     }
 
@@ -43,8 +47,10 @@ export const useModulesStore = defineStore('modules', () => {
         try {
             const response = await modulesService.updateModule(idModule, data);
             updateModuleState(response.data)
+            notificationsStore.notify('Modification du module effectué avec succès')
         } catch (e) {
             console.error(e)
+            notificationsStore.notify('Échec de la suppression du module', 'error')
         }
     }
 

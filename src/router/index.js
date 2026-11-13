@@ -53,7 +53,7 @@ const router = createRouter({
         {
             path: '/login',
             component: () => import('@/views/LoginView.vue'),
-            meta: { hideNavbar: true }
+            meta: {hideNavbar: true, guestOnly: true}
         },
         {
             path: '/',
@@ -62,11 +62,20 @@ const router = createRouter({
     ]
 })
 
+
+
+
+let authChecked = false
 router.beforeEach(async (to) => {
     const authStore = useAuthStore();
 
-    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    if (!authChecked) {
         await authStore.checkAuth();
+        authChecked = true;
+    }
+
+    if (to.meta.guestOnly && authStore.isAuthenticated) {
+        return '/account';
     }
 
     // verify auth
