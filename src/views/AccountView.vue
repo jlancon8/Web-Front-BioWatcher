@@ -12,7 +12,7 @@
             <h2 class="text-lg font-extrabold">Informations personnelles</h2>
 
             <div class="flex flex-col gap-1.5">
-              <label for="nom" class="text-[13px] text-[#4f5f56]">Login</label>
+              <label for="nom" class="text-[13px] text-[#4f5f56]">Nom</label>
               <input
                   id="nom"
                   v-model="accountForm.name"

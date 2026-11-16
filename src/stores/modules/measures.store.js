@@ -76,7 +76,6 @@ export const useMeasuresStore = defineStore('measures', () => {
     const getMeasuresChartData = async (moduleId, type, from, to) => {
         try {
             const response = await measuresService.getMeasuresChartData(moduleId, type, from, to)
-            console.log("response:", JSON.stringify(response.data));
             setMeasuresChartData(response.data)
         } catch (e) {
             console.error(e)

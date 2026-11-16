@@ -76,31 +76,18 @@
 
           <tbody>
           <tr
-              v-for="measure in paginatedMeasures"
-              :key="measure.id"
+              v-for="measure in historyMeasures"
+              :key="measure._id"
               class="border-b border-[#dce4dd] last:border-0"
           >
-            <td class="px-2 py-3 text-[#35483c]">
-              {{ formatDate(measure.date) }}
-            </td>
-
-            <td class="px-2 py-3 text-[#35483c]">
-              {{ selectedModuleName }}
-            </td>
-
-            <td class="px-2 py-3 text-[#35483c]">
-              {{ measure.type }}
-            </td>
-
-            <td class="px-2 py-3 text-[#35483c] text-right">
-              {{ formatType(measure.value, measure.type) }}
-            </td>
+            <td class="px-2 py-3 text-[#35483c]">{{ formatDate(measure.date) }}</td>
+            <td class="px-2 py-3 text-[#35483c]">{{ selectedModuleName }}</td>
+            <td class="px-2 py-3 text-[#35483c]">{{ measure.type }}</td>
+            <td class="px-2 py-3 text-[#35483c] text-right">{{ formatType(measure.value, measure.type) }}</td>
           </tr>
 
-          <tr v-if="!paginatedMeasures.length">
-            <td colspan="4" class="py-8 text-center text-[#829087]">
-              Aucune mesure disponible
-            </td>
+          <tr v-if="!historyMeasures.length">
+            <td colspan="4" class="py-8 text-center text-[#829087]">Aucune mesure disponible</td>
           </tr>
           </tbody>
         </table>
@@ -108,7 +95,7 @@
 
       <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p class="text-xs text-[#718076]">
-          {{ startIndex + 1 }} à {{ endIndex }} sur {{ filteredMeasures.length }} mesures
+          {{ totalMeasures ? startIndex + 1 : 0 }} à {{ endIndex }} sur {{ totalMeasures }} mesures
         </p>
 
         <div class="flex gap-2">
@@ -146,48 +133,21 @@ import {computed, onMounted, ref, watch} from 'vue'
 import LineChart from '@/components/charts/LineChart.vue'
 import {useModulesStore} from '@/stores/modules/modules.store.js'
 import {useMeasuresStore} from '@/stores/modules/measures.store.js'
-import {DAY, formatDate, formatType} from "@/utils/formatter.js";
+import {DAY, formatDate, formatType} from '@/utils/formatter.js'
+import {types, units} from "@/utils/consts.js";
 
 const modulesStore = useModulesStore()
 const measuresStore = useMeasuresStore()
 
-const currentPage = ref(1)
 const pageSize = 5
+const currentPage = ref(1)
 
+// a mettre dans formats
 const chartColors = {
   temperature: {line: '#c9731a', area: '#f6e3c8'},
   humidity: {line: '#2f6b8f', area: '#d9e8f2'},
   pm25: {line: '#6b5b8f', area: '#e4def0'}
 }
-
-const filteredMeasures = computed(() =>
-    measuresStore.measures.filter(measure =>
-        measure.type === type.value
-        && measure.module === moduleId.value
-        && new Date(measure.date) >= periods.find(p => p.key === period.value).from()
-    )
-)
-
-const totalPages = computed(() =>
-    Math.ceil(filteredMeasures.value.length / pageSize)
-)
-
-const startIndex = computed(() =>
-    (currentPage.value - 1) * pageSize
-)
-
-const endIndex = computed(() =>
-    Math.min(startIndex.value + pageSize, filteredMeasures.value.length)
-)
-
-const paginatedMeasures = computed(() =>
-    filteredMeasures.value.slice(startIndex.value, endIndex.value)
-)
-
-
-
-const types = ['temperature', 'humidity', 'pm25']
-const units = {temperature: '°C', humidity: '%', pm25: 'µg/m³'}
 
 const periods = [
   {key: '24h', label: '24 h', from: () => new Date(Date.now() - DAY)},
@@ -206,6 +166,17 @@ const selectedModuleName = computed(() =>
     modulesStore.modules.find(module => module._id === moduleId.value)?.name ?? ''
 )
 
+const historyMeasures = computed(() => {
+  const history = measuresStore.measuresHistory
+  if (Array.isArray(history)) return history
+  return history?.data ?? history?.measures ?? []
+})
+
+const totalMeasures = computed(() => stats.value?.count ?? 0)
+const totalPages = computed(() => Math.max(1, Math.ceil(totalMeasures.value / pageSize)))
+const startIndex = computed(() => (currentPage.value - 1) * pageSize)
+const endIndex = computed(() => Math.min(startIndex.value + pageSize, totalMeasures.value))
+
 const format = (value, digits = 2) =>
     Number.isFinite(value) ? value.toFixed(digits).replace('.', ',') : '—'
 
@@ -215,32 +186,42 @@ const cards = computed(() => {
     {label: 'Minimum', value: format(stats.value?.min), unit},
     {label: 'Moyenne', value: format(stats.value?.avg), unit},
     {label: 'Maximum', value: format(stats.value?.max), unit},
-    {label: 'Mesures sur la période', value: (stats.value?.count ?? 0).toLocaleString('fr-FR'), unit: ''}
+    {label: 'Mesures sur la période', value: totalMeasures.value.toLocaleString('fr-FR'), unit: ''}
   ]
 })
 
-const loadData = async () => {
-  if (!moduleId.value) return
+const getRange = () => {
   const item = periods.find(p => p.key === period.value)
-  const from = item.from().toISOString()
-  const to = new Date().toISOString()
+  return {from: item.from().toISOString(), to: new Date().toISOString()}
+}
 
+const loadStatsAndChart = async () => {
+  if (!moduleId.value) return
+  const {from, to} = getRange()
   await Promise.all([
     measuresStore.getMeasuresStats(moduleId.value, type.value, from, to),
     measuresStore.getMeasuresChartData(moduleId.value, type.value, from, to)
   ])
-
   stats.value = measuresStore.measuresStats
   chartPoints.value = measuresStore.measuresChartData
-  currentPage.value = 1
 }
 
-watch([moduleId, type, period], loadData)
+const loadHistory = async () => {
+  if (!moduleId.value) return
+  const {from} = getRange()
+  await measuresStore.getMeasuresHistory(moduleId.value, type.value, from, currentPage.value, pageSize)
+}
+
+watch([moduleId, type, period], () => {
+  loadStatsAndChart()
+  if (currentPage.value !== 1) currentPage.value = 1
+  else loadHistory()
+})
+
+watch(currentPage, loadHistory)
 
 onMounted(async () => {
   await modulesStore.getModules()
-  await measuresStore.getMeasures()
-  await measuresStore.getMeasuresHistory(moduleId.value, type.value, item.from().toISOString(), currentPage.value, pageSize.value)
   moduleId.value = modulesStore.modules[0]?._id ?? ''
 })
 </script>
