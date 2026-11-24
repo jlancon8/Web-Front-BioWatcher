@@ -36,6 +36,11 @@ const router = createRouter({
                     component: () => import('@/components/dashboard/ModulesManagementView.vue'),
                 },
                 {
+                    path: 'map',
+                    name: 'map',
+                    component: () => import('@/components/dashboard/Map.vue'),
+                },
+                {
                     path: 'accounts',
                     name: 'accounts-management',
                     component: () => import('@/components/dashboard/AccountsManagementView.vue'),

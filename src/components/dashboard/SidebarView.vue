@@ -102,6 +102,7 @@ const menuItems = [
   {label: 'Modules et mesures', to: '/dashboard'},
   {label: 'Historique', to: '/dashboard/history'},
   {label: 'Gestion des modules', to: '/dashboard/modules'},
+  {label: 'Gestion des zones', to: '/dashboard/map'},
   ...(authStore.currentUser?.rights?.includes('admin')
       ? [{label: 'Comptes', to: '/dashboard/accounts'}]
       : [])
