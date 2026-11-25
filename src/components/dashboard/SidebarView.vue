@@ -98,18 +98,27 @@ defineProps({
 const route = useRoute()
 const open = ref(false)
 
-const menuItems = [
-  {label: 'Modules et mesures', to: '/dashboard'},
-  {label: 'Historique', to: '/dashboard/history'},
-  {label: 'Gestion des modules', to: '/dashboard/modules'},
-  {label: 'Gestion des zones', to: '/dashboard/map'},
-  ...(authStore.currentUser?.rights?.includes('admin')
-      ? [{label: 'Comptes', to: '/dashboard/accounts'}]
-      : [])
+const hasRole = (...roles) => {
+  const rights = authStore.currentUser?.rights ?? [];
+  return rights.some(r => r.startsWith('admin') || roles.some(role => r.startsWith(role)));
+};
+
+// nothing specified --> garde, admin and gestionnaire rights can access, otherwise, "roles" defines it
+const allMenuItems = [
+  { label: 'Modules et mesures', to: '/dashboard' },
+  { label: 'Historique', to: '/dashboard/history' },
+  { label: 'Gestion des modules', to: '/dashboard/modules'},
+  { label: 'Gestion des zones', to: '/dashboard/map', roles: ['garde'] },
+  { label: 'Comptes', to: '/dashboard/accounts', roles: ['admin'] }
 ];
 
-const primaryItems = computed(() => menuItems.slice(0, 2))
-const secondaryItems = computed(() => menuItems.slice(2))
+
+const menuItems = computed(() =>
+    allMenuItems.filter(item => !item.roles || hasRole(...item.roles)) // spread operator because it is a []
+);
+
+const primaryItems = computed(() => menuItems.value.slice(0, 2))
+const secondaryItems = computed(() => menuItems.value.slice(2))
 
 const linkClass = (item) => [
   'flex w-full items-center rounded-xl px-3 py-3.5',

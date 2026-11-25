@@ -39,6 +39,9 @@ const router = createRouter({
                     path: 'map',
                     name: 'map',
                     component: () => import('@/components/dashboard/Map.vue'),
+                    meta: {
+                        roles: ['admin', 'garde']
+                    }
                 },
                 {
                     path: 'accounts',
