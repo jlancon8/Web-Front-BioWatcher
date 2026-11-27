@@ -184,6 +184,7 @@ const showDeleteDialog = ref(false);
 const deleting = ref(false);
 const showUpdateDialog = ref(false);
 const saving = ref(false);
+const layers = new Map();
 
 const selectedZone = computed(() =>
     zonesStore.zones?.find(z => z._id === selectedId.value) ?? null
@@ -213,21 +214,22 @@ const style = (zone) => ({
 function dessiner(zone) {
   const layer = L.geoJSON(zone.geometrie, { style: style(zone) }).addTo(map);
   layer.bindTooltip(`${zone.nom} appartenant à ${zone.garde.name}`);
-  geometries.push(zone.geometrie);
+  layers.set(zone._id, layer);
 }
-
 
 // if a zone is in the polygon the user defined, then return true, otherwise return false
 function chevauche(geometrie) {
   const nouvelle = feature(geometrie);
   try {
-    return geometries.some(g => intersect(featureCollection([nouvelle, feature(g)])) !== null);
+    return (zonesStore.zones ?? []).some(z =>
+        intersect(featureCollection([nouvelle, feature(z.geometrie)])) !== null
+    );
   } catch {
     return true;
   }
 }
 
-function createZone({ layer }) {
+async function createZone({ layer }) {
   const geometrie = layer.toGeoJSON().geometry;
   layer.remove();
 
@@ -239,35 +241,38 @@ function createZone({ layer }) {
   const nom = prompt('Nom de la zone');
   if (!nom?.trim()) return;
 
-  const zone = {
-    nom: nom.trim(),
-    garde: authStore.currentUser,
-    geometrie
-  };
-
-  zonesStore.createZone({
+  const zone = await zonesStore.createZone({
     nom: nom.trim(),
     geometrie,
     garde: authStore.currentUser,
   });
 
-  dessiner(zone);
-}
-
-async function confirmUpdate() {
-  saving.value = true;
-  console.log("form nom:" + form.value.nom + "avec le trim:" + form.value.nom.trim())
-  await zonesStore.updateZone(selectedZone.value._id, { nom: form.value.nom.trim() });
-  saving.value = false;
-  showUpdateDialog.value = false;
+  if (zone) dessiner(zone);
 }
 
 async function deleteZone() {
+  const id = selectedZone.value._id;
   deleting.value = true;
-  await zonesStore.deleteZone(selectedZone.value._id);
+  await zonesStore.deleteZone(id);
   deleting.value = false;
   showDeleteDialog.value = false;
-  selectedId.value = null;
+
+  if (!zonesStore.zones.some(z => z._id === id)) {
+    layers.get(id)?.remove();
+    layers.delete(id);
+    selectedId.value = null;
+  }
+}
+
+async function confirmUpdate() {
+  const id = selectedZone.value._id;
+  saving.value = true;
+  await zonesStore.updateZone(id, { nom: form.value.nom.trim() });
+  saving.value = false;
+  showUpdateDialog.value = false;
+
+  const zone = zonesStore.zones.find(z => z._id === id);
+  if (zone) layers.get(id)?.setTooltipContent(`${zone.nom} appartenant à ${zone.garde.name}`);
 }
 
 function rechercher() {

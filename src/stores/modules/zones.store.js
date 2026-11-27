@@ -62,8 +62,8 @@ export const useZonesStore = defineStore('zones', () => {
             const response = await zonesService.createZone(data);
             addMyZoneState(response.data)
             addZoneState(response.data)
-            console.log("response: create" + JSON.stringify(response.data))
             notificationsStore.notify('Zone créée avec succès')
+            return response.data
         } catch (e) {
             console.error(e)
             notificationsStore.notify('Échec de la mise à jour de l\'utilisateur', 'error')
@@ -74,7 +74,6 @@ export const useZonesStore = defineStore('zones', () => {
         try {
             const response = await zonesService.updateZone(idZone, data);
             updateZoneState(response.data)
-            console.log("response update: " + JSON.stringify(response.data))
             notificationsStore.notify('Zone mis à jour')
             return response.data
         } catch (e) {
@@ -87,10 +86,11 @@ export const useZonesStore = defineStore('zones', () => {
     const deleteZone = async (idZone) => {
         try {
             const response = await zonesService.deleteZone(idZone);
-            console.log("response delete: " + JSON.stringify(response.data))
             deleteZoneState(response.data._id)
+            notificationsStore.notify('Suppression effectué avec succès')
         } catch (e) {
             console.error(e)
+            notificationsStore.notify('Échec de la suppression de la zone', 'error')
         }
     }
 

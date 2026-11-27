@@ -50,7 +50,7 @@ export const useModulesStore = defineStore('modules', () => {
             notificationsStore.notify('Modification du module effectué avec succès')
         } catch (e) {
             console.error(e)
-            notificationsStore.notify('Échec de la suppression du module', 'error')
+            notificationsStore.notify('Échec de la modification du module', 'error')
         }
     }
 
